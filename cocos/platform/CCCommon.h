@@ -52,7 +52,9 @@ void CC_DLL MessageBox(const char * msg, const char * title);
 enum class LanguageType
 {
     ENGLISH = 0,
-    CHINESE,
+    CHINESE_SIMPLIFIED,
+    CHINESE_TRADITIONAL,
+    CHINESE = CHINESE_SIMPLIFIED,
     FRENCH,
     ITALIAN,
     GERMAN,
