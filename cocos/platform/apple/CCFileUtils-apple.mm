@@ -384,7 +384,7 @@ bool FileUtilsApple::isFileExistInternal(const std::string& filePath) const
     else
     {
         // Search path is an absolute path.
-        if ([s_fileManager fileExistsAtPath:[NSString stringWithUTF8String:filePath.c_str()]]) {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:filePath.c_str()]]) {
             ret = true;
         }
     }
