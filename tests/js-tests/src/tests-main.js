@@ -378,6 +378,14 @@ var testNames = [
             return new EffectAdvanceScene();
         }
     },
+    {
+        title:"Native Test",
+        platforms: PLATFORM_JSB,
+        linksrc:"src/NativeTest/NativeTest.js",
+        testScene:function () {
+            return new NativeTestScene();
+        }
+    },
     //{
     //    title:"Facebook SDK Test",
     //    platforms: PLATFROM_ANDROID | PLATFROM_IOS | PLATFORM_HTML5,
@@ -703,6 +711,14 @@ var testNames = [
         linksrc:"src/SysTest/SysTest.js",
         testScene:function () {
             return new SysTestScene();
+        }
+    },
+    {
+        title:"Vibrate Test",
+        platforms: PLATFORM_ALL,
+        linksrc:"src/VibrateTest/VibrateTest.js",
+        testScene:function () {
+            return new VibrateTestScene();
         }
     },
     {

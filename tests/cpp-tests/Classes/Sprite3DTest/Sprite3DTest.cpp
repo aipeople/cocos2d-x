@@ -26,6 +26,8 @@
 #include "Sprite3DTest.h"
 #include "DrawNode3D.h"
 
+#include "extensions/Particle3D/PU/CCPUParticleSystem3D.h"
+
 #include <algorithm>
 #include "../testResource.h"
 
@@ -58,6 +60,7 @@ Sprite3DTests::Sprite3DTests()
     ADD_TEST_CASE(Issue9767);
     ADD_TEST_CASE(Sprite3DClippingTest);
     ADD_TEST_CASE(Sprite3DTestMeshLight);
+    ADD_TEST_CASE(Animate3DCallbackTest);
 };
 
 //------------------------------------------------------------------
@@ -1034,10 +1037,12 @@ void Effect3DOutline::draw(const Mat4 &transform)
     _glProgramState->setUniformVec4("u_color", Vec4(color.r, color.g, color.b, color.a));
     if(_sprite && _sprite->getMesh())
     {
+        GLenum cullFace = GL_FRONT;
+        if ((_sprite->getScaleX() * _sprite->getScaleY() * _sprite->getScaleZ()) < 0.0f)
+            cullFace = GL_BACK;
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
+        glCullFace(cullFace);
         glEnable(GL_DEPTH_TEST);
-        
         auto mesh = _sprite->getMesh();
         glBindBuffer(GL_ARRAY_BUFFER, mesh->getVertexBuffer());
         
@@ -1186,7 +1191,7 @@ AsyncLoadSprite3DTest::AsyncLoadSprite3DTest()
     auto s = Director::getInstance()->getWinSize();
     item1->setPosition( s.width * .5f, s.height * .8f);
     
-    auto pMenu1 = CCMenu::create(item1, nullptr);
+    auto pMenu1 = Menu::create(item1, nullptr);
     pMenu1->setPosition(Vec2(0,0));
     this->addChild(pMenu1, 10);
     
@@ -1638,7 +1643,7 @@ Sprite3DReskinTest::Sprite3DReskinTest()
     item3->setUserData((void*)SkinType::UPPER_BODY);
     item4->setUserData((void*)SkinType::PANTS);
     item5->setUserData((void*)SkinType::SHOES);
-    auto pMenu1 = CCMenu::create(item1, item2, item3, item4, item5, nullptr);
+    auto pMenu1 = Menu::create(item1, item2, item3, item4, item5, nullptr);
     pMenu1->setPosition(Vec2(0,0));
     this->addChild(pMenu1, 10);
     
@@ -2231,7 +2236,7 @@ void UseCaseSprite3D::switchCase()
         item1->setPosition( Vec2(s.width * 0.5f - item1->getContentSize().width * 0.5f, s.height * 0.5f - item1->getContentSize().height ) );
         item2->setPosition( Vec2(s.width * 0.5f - item1->getContentSize().width * 0.5f, s.height * 0.5f - item1->getContentSize().height * 2.f ) );
         
-        auto pMenu1 = CCMenu::create(item1, item2, nullptr);
+        auto pMenu1 = Menu::create(item1, item2, nullptr);
         pMenu1->setPosition(Vec2(0,0));
         layer->addChild(pMenu1);
         
@@ -2543,7 +2548,7 @@ Issue9767::Issue9767()
     
     item1->setPosition( Vec2(s.width * 0.9f - item1->getContentSize().width * 0.5f, s.height * 0.5f - item1->getContentSize().height ) );
     
-    auto pMenu1 = CCMenu::create(item1, nullptr);
+    auto pMenu1 = Menu::create(item1, nullptr);
     pMenu1->setPosition(Vec2(0,0));
     addChild(pMenu1);
 }
@@ -2614,6 +2619,70 @@ std::string Sprite3DClippingTest::title() const
 }
 
 std::string Sprite3DClippingTest::subtitle() const
+{
+    return "";
+}
+
+Animate3DCallbackTest::Animate3DCallbackTest()
+{
+    FileUtils::getInstance()->addSearchPath("Particle3D/materials");
+    FileUtils::getInstance()->addSearchPath("Particle3D/scripts");
+    
+    auto s = Director::getInstance()->getWinSize();
+    _sprite3d = Sprite3D::create("Sprite3DTest/ReskinGirl.c3b");
+    _sprite3d->setPosition(Vec2(s.width / 2.0f, s.height / 3.0f));
+    _sprite3d->setScale(3.0f);
+    _sprite3d->setRotation3D(Vec3(0.0f, 90.0f, 0.0f));
+    this->addChild(_sprite3d);
+    
+    _sprite3d->getMeshByName("Girl_UpperBody02")->setVisible(false);
+    _sprite3d->getMeshByName("Girl_LowerBody02")->setVisible(false);
+    _sprite3d->getMeshByName("Girl_Shoes02")->setVisible(false);
+    _sprite3d->getMeshByName("Girl_Hair02")->setVisible(false);
+    
+    
+    auto rootps = PUParticleSystem3D::create("explosionSystem.pu");
+    rootps->stopParticleSystem();
+    rootps->setScale(4.0f);
+    this->addChild(rootps, 0, 100);
+
+    auto animation = Animation3D::create("Sprite3DTest/ReskinGirl.c3b");
+    if (animation)
+    {
+        auto animate = Animate3D::create(animation);
+        _sprite3d->runAction(RepeatForever::create(animate));
+
+        ValueMap valuemap0;
+        animate->setKeyFrameUserInfo(275, valuemap0);
+        
+        auto listener = EventListenerCustom::create(Animate3DDisplayedNotification, [&](EventCustom* event)
+        {
+            auto info = (Animate3D::Animate3DDisplayedEventInfo*)event->getUserData();
+            auto node = getChildByTag(100);
+            if (node)
+            {
+                auto mat = _sprite3d->getNodeToWorldTransform() * _sprite3d->getSkeleton()->getBoneByName("Bip01 R Hand")->getWorldMat();
+                node->setPosition3D(Vec3(mat.m[12] + 100, mat.m[13], mat.m[14]));
+                ((PUParticleSystem3D*)node)->startParticleSystem();
+            }
+                
+            
+            CCLOG("frame %d", info->frame);
+        });
+        Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(listener, -1);
+    }
+}
+
+Animate3DCallbackTest::~Animate3DCallbackTest()
+{
+}
+
+std::string Animate3DCallbackTest::title() const
+{
+    return "Testing Animate3D Callback";
+}
+
+std::string Animate3DCallbackTest::subtitle() const
 {
     return "";
 }

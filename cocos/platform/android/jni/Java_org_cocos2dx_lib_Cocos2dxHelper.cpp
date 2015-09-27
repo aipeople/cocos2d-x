@@ -32,6 +32,8 @@ THE SOFTWARE.
 #include "deprecated/CCString.h"
 #include "Java_org_cocos2dx_lib_Cocos2dxHelper.h"
 
+#include "base/ccUTF8.h"
+
 #define  LOG_TAG    "Java_org_cocos2dx_lib_Cocos2dxHelper.cpp"
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
@@ -117,12 +119,13 @@ void showEditTextDialogJNI(const char* title, const char* message, int inputMode
         jstring stringArg1;
 
         if (!title) {
+
             stringArg1 = t.env->NewStringUTF("");
         } else {
-            stringArg1 = t.env->NewStringUTF(title);
+            stringArg1 = cocos2d::StringUtils::newStringUTFJNI(t.env, title);
         }
 
-        jstring stringArg2 = t.env->NewStringUTF(message);
+        jstring stringArg2 = cocos2d::StringUtils::newStringUTFJNI(t.env, message);
 
         t.env->CallStaticVoidMethod(t.classID, t.methodID, stringArg1, stringArg2,inputMode, inputFlag, returnType, maxLength);
 
@@ -214,6 +217,16 @@ void setKeepScreenOnJni(bool value) {
     
     if (JniHelper::getStaticMethodInfo(t, CLASS_NAME, "setKeepScreenOn", "(Z)V")) {
         t.env->CallStaticVoidMethod(t.classID, t.methodID, value);
+        
+        t.env->DeleteLocalRef(t.classID);
+    }
+}
+
+void vibrateJni(float duration) {
+    JniMethodInfo t;
+    
+    if (JniHelper::getStaticMethodInfo(t, CLASS_NAME, "vibrate", "(F)V")) {
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, duration);
         
         t.env->DeleteLocalRef(t.classID);
     }
@@ -388,6 +401,19 @@ void setStringForKeyJNI(const char* key, const char* value)
         t.env->DeleteLocalRef(t.classID);
         t.env->DeleteLocalRef(stringArg1);
         t.env->DeleteLocalRef(stringArg2);
+    }
+}
+
+void deleteValueForKeyJNI(const char* key)
+{
+    JniMethodInfo t;
+    
+    if (JniHelper::getStaticMethodInfo(t, CLASS_NAME, "deleteValueForKey", "(Ljava/lang/String;)V")) {
+        jstring stringArg1 = t.env->NewStringUTF(key);
+        t.env->CallStaticVoidMethod(t.classID, t.methodID, stringArg1);
+        
+        t.env->DeleteLocalRef(t.classID);
+        t.env->DeleteLocalRef(stringArg1);
     }
 }
 
