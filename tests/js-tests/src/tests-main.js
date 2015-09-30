@@ -114,6 +114,15 @@ var TestController = cc.LayerGradient.extend({
         menu.x = 0;
 	    menu.y = 0;
 
+        // sort the test title
+        testNames.sort(function(first, second){
+            if (first.title > second.title)
+            {
+                return 1;
+            }
+            return -1;
+        });
+
         // add menu items for tests
         this._itemMenu = new cc.Menu();//item menu is where all the label goes, and the one gets scrolled
 
@@ -200,7 +209,13 @@ var TestController = cc.LayerGradient.extend({
         }, this);
     },
     onCloseCallback:function () {
-        window.history && window.history.go(-1);
+        if (cc.sys.isNative)
+        {
+            cc.director.end();
+        }
+        else {
+            window.history && window.history.go(-1);
+        }
     },
     onToggleAutoTest:function() {
         autoTestEnabled = !autoTestEnabled;
@@ -276,15 +291,6 @@ var testNames = [
             return new ChipmunkTestScene();
         }
     },
-    //"BugsTest",
-    {
-        title:"Click and Move Test",
-        platforms: PLATFORM_ALL,
-        linksrc:"src/ClickAndMoveTest/ClickAndMoveTest.js",
-        testScene:function () {
-            return new ClickAndMoveTestScene();
-        }
-    },
     {
         title:"ClippingNode Test",
         platforms: PLATFORM_ALL,
@@ -309,6 +315,14 @@ var testNames = [
         linksrc:"",
         testScene:function () {
             return new CocoStudioTestScene();
+        }
+    },
+    {
+        title:"Component Test",
+        platforms: PLATFORM_JSB,
+        linksrc:"src/ComponentTest/ComponentTest.js",
+        testScene:function () {
+            return new ComponentTestScene();
         }
     },
     {
@@ -530,15 +544,6 @@ var testNames = [
         }
     },
     {
-        title:"Performance Test",
-        platforms: PLATFORM_ALL,
-        linksrc:"",
-        resource:g_performace,
-        testScene:function () {
-            return new PerformanceTestScene();
-        }
-    },
-    {
         title:"Physics3D Test",
         platforms: PLATFORM_JSB,
         linksrc:"src/Physics3DTest/Physics3DTest.js",
@@ -715,7 +720,7 @@ var testNames = [
     },
     {
         title:"Vibrate Test",
-        platforms: PLATFORM_ALL,
+        platforms: PLATFORM_JSB,
         linksrc:"src/VibrateTest/VibrateTest.js",
         testScene:function () {
             return new VibrateTestScene();

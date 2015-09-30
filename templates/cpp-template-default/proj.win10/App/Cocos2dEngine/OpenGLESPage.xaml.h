@@ -26,13 +26,14 @@
 
 #include "Cocos2dRenderer.h"
 
-namespace cocos2d
+namespace CocosAppWinRT
 {
     public ref class OpenGLESPage sealed
     {
     public:
         OpenGLESPage();
         virtual ~OpenGLESPage();
+        void SetVisibility(bool isVisible);
 
     internal:
         OpenGLESPage(OpenGLES* openGLES);
@@ -52,8 +53,10 @@ namespace cocos2d
         void StartRenderLoop();
         void StopRenderLoop();
 
+        void CreateInput();
+
         OpenGLES* mOpenGLES;
-        std::shared_ptr<cocos2d::Cocos2dRenderer> mRenderer;
+        std::shared_ptr<Cocos2dRenderer> mRenderer;
 
         Windows::Foundation::Size mSwapChainPanelSize;
         Concurrency::critical_section mSwapChainPanelSizeCriticalSection;
@@ -69,12 +72,16 @@ namespace cocos2d
         Windows::Foundation::IAsyncAction^ mInputLoopWorker;
         Windows::UI::Core::CoreIndependentInputSource^ mCoreInput;
 
-        // Independent input handling functions.
+        // Independent touch and pen handling functions.
         void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
         void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
         void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
+        void OnPointerWheelChanged(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
+
+        // Independent keyboard handling functions.
 		void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 		void OnKeyReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+
 		void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
 
         void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
@@ -82,6 +89,7 @@ namespace cocos2d
         float mDpi;
         bool mDeviceLost;
         bool mVisible;
+        bool mCursorVisible;
         Windows::Graphics::Display::DisplayOrientations mOrientation;
 
         std::mutex mSleepMutex;

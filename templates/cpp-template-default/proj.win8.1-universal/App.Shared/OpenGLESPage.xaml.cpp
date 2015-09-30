@@ -19,6 +19,7 @@
 #include "App.xaml.h"
 #include "OpenGLESPage.xaml.h"
 
+using namespace CocosAppWinRT;
 using namespace cocos2d;
 using namespace Platform;
 using namespace Concurrency;
@@ -54,6 +55,7 @@ OpenGLESPage::OpenGLESPage(OpenGLES* openGLES) :
     mCoreInput(nullptr),
     mDpi(0.0f),
     mDeviceLost(false),
+    mCursorVisible(true),
     mVisible(false),
     mOrientation(DisplayOrientations::Landscape)
 {
@@ -108,6 +110,11 @@ OpenGLESPage::OpenGLESPage(OpenGLES* openGLES) :
 #endif
 #endif
 
+    CreateInput();
+}
+
+void OpenGLESPage::CreateInput()
+{
     // Register our SwapChainPanel to get independent input pointer events
     auto workItemHandler = ref new WorkItemHandler([this](IAsyncAction ^)
     {
@@ -122,6 +129,12 @@ OpenGLESPage::OpenGLESPage(OpenGLES* openGLES) :
         mCoreInput->PointerPressed += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &OpenGLESPage::OnPointerPressed);
         mCoreInput->PointerMoved += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &OpenGLESPage::OnPointerMoved);
         mCoreInput->PointerReleased += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &OpenGLESPage::OnPointerReleased);
+        mCoreInput->PointerWheelChanged += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &OpenGLESPage::OnPointerWheelChanged);
+
+        if (GLViewImpl::sharedOpenGLView() && !GLViewImpl::sharedOpenGLView()->isCursorVisible())
+        {
+            mCoreInput->PointerCursor = nullptr;
+        }
 
 		// Begin processing input messages as they're delivered.
         mCoreInput->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
@@ -147,25 +160,38 @@ void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::Rou
 
 void OpenGLESPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
 {
+    bool isMouseEvent = e->CurrentPoint->PointerDevice->PointerDeviceType == Windows::Devices::Input::PointerDeviceType::Mouse;
     if (mRenderer)
     {
-        mRenderer->QueuePointerEvent(PointerEventType::PointerPressed, e);
+        mRenderer->QueuePointerEvent(isMouseEvent ? PointerEventType::MousePressed : PointerEventType::PointerPressed, e);
     }
 }
 
 void OpenGLESPage::OnPointerMoved(Object^ sender, PointerEventArgs^ e)
 {
+    bool isMouseEvent = e->CurrentPoint->PointerDevice->PointerDeviceType == Windows::Devices::Input::PointerDeviceType::Mouse;
     if (mRenderer)
     {
-        mRenderer->QueuePointerEvent(PointerEventType::PointerMoved, e);
+        mRenderer->QueuePointerEvent(isMouseEvent ? PointerEventType::MouseMoved : PointerEventType::PointerMoved, e);
     }
 }
 
 void OpenGLESPage::OnPointerReleased(Object^ sender, PointerEventArgs^ e)
 {
+    bool isMouseEvent = e->CurrentPoint->PointerDevice->PointerDeviceType == Windows::Devices::Input::PointerDeviceType::Mouse;
+
     if (mRenderer)
     {
-        mRenderer->QueuePointerEvent(PointerEventType::PointerReleased, e);
+        mRenderer->QueuePointerEvent(isMouseEvent ? PointerEventType::MouseReleased : PointerEventType::PointerReleased, e);
+    }
+}
+
+void OpenGLESPage::OnPointerWheelChanged(Object^ sender, PointerEventArgs^ e)
+{
+    bool isMouseEvent = e->CurrentPoint->PointerDevice->PointerDeviceType == Windows::Devices::Input::PointerDeviceType::Mouse;
+    if (mRenderer && isMouseEvent)
+    {
+        mRenderer->QueuePointerEvent(PointerEventType::MouseWheelChanged, e);
     }
 }
 
@@ -207,9 +233,9 @@ void OpenGLESPage::OnOrientationChanged(DisplayInformation^ sender, Object^ args
     mOrientation = sender->CurrentOrientation;
 }
 
-void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)
+void OpenGLESPage::SetVisibility(bool isVisible)
 {
-    if (args->Visible && mRenderSurface != EGL_NO_SURFACE)
+    if (isVisible && mRenderSurface != EGL_NO_SURFACE)
     {
         std::unique_lock<std::mutex> locker(mSleepMutex);
         mVisible = true;
@@ -218,6 +244,18 @@ void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Wi
     else
     {
         mVisible = false;
+    }
+}
+
+void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)
+{
+    if (args->Visible && mRenderSurface != EGL_NO_SURFACE)
+    {
+        SetVisibility(true);
+    }
+    else
+    {
+        SetVisibility(false);
     }
 }
 
@@ -377,6 +415,13 @@ void OpenGLESPage::StartRenderLoop()
             GetSwapChainPanelSize(&panelWidth, &panelHeight);
             mRenderer.get()->Draw(panelWidth, panelHeight, mDpi, mOrientation);
 
+            // Recreate input dispatch
+            if (GLViewImpl::sharedOpenGLView() && mCursorVisible != GLViewImpl::sharedOpenGLView()->isCursorVisible())
+            {
+                CreateInput();
+                mCursorVisible = GLViewImpl::sharedOpenGLView()->isCursorVisible();
+            }
+
             if (mRenderer->AppShouldExit())
             {
                 // run on main UI thread
@@ -420,6 +465,7 @@ void OpenGLESPage::StartRenderLoop()
 
                     if (!mDeviceLost)
                     {
+                        mOpenGLES->MakeCurrent(mRenderSurface);
                         // restart cocos2d-x 
                         mRenderer->DeviceLost();
                     }

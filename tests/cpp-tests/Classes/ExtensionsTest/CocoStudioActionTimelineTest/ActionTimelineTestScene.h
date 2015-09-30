@@ -127,11 +127,8 @@ public:
     virtual std::string title() const override;
 
 private:
-    void setAllSubBonesDebugDraw(cocostudio::timeline::SkeletonNode* rootSkeleton, bool isShow);
-
     bool _changedDisplay;
     bool _changedDisplays;
-    bool _isAllBonesDraw;
 };
 
 class TestTimelineExtensionData : public ActionTimelineBaseTest
@@ -142,4 +139,20 @@ public:
     virtual std::string title() const override;
 };
 
+class TestActionTimelineBlendFuncFrame : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestActionTimelineBlendFuncFrame);
+    virtual void onEnter() override;
+    virtual std::string title() const override;
+};
+
+class TestAnimationClipEndCallBack : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestAnimationClipEndCallBack);
+
+    virtual void onEnter() override;
+    virtual std::string title() const override;
+};
 #endif  // __ANIMATION_SCENE_H__

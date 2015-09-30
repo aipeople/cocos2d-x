@@ -541,8 +541,12 @@ cocos2d::Vec3 Terrain::getIntersectionPoint(const Ray & ray) const
     }
 }
 
-bool Terrain::getIntersectionPoint(const Ray & ray, Vec3 & intersectionPoint) const
+bool Terrain::getIntersectionPoint(const Ray & ray_, Vec3 & intersectionPoint) const
 {
+	// convert ray from world space to local space
+    Ray ray(ray_);
+    getWorldToNodeTransform().transformPoint(&(ray._origin));
+
     std::set<Chunk *> closeList;
     Vec2 start = Vec2(ray._origin.x,ray._origin.z);
     Vec2 dir = Vec2(ray._direction.x,ray._direction.z);
@@ -920,7 +924,7 @@ void Terrain::reload()
 
 void Terrain::Chunk::finish()
 {
-    //genearate two VBO ,the first for vertices, we just setup datas once ,won't changed at all
+    //generate two VBO ,the first for vertices, we just setup datas once ,won't changed at all
     //the second vbo for the indices, because we use level of detail technique to each chunk, so we will modified frequently 
     glGenBuffers(1,&_vbo);
 
@@ -935,7 +939,7 @@ void Terrain::Chunk::finish()
     for(int i =0;i<4;i++)
     {
         int step = 1<<_currentLod;
-        //reserve the indices size, the first part is the core part of the chunk, the second part & thid part is for fix crack 
+        //reserve the indices size, the first part is the core part of the chunk, the second part & third part is for fix crack 
         int indicesAmount =(_terrain->_chunkSize.width/step+1)*(_terrain->_chunkSize.height/step+1)*6+(_terrain->_chunkSize.height/step)*6
             +(_terrain->_chunkSize.width/step)*6;
         _lod[i]._indices.reserve(indicesAmount);
