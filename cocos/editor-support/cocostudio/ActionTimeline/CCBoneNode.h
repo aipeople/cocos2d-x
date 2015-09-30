@@ -109,7 +109,8 @@ public:
     virtual void setBlendFunc(const cocos2d::BlendFunc &blendFunc) override;
     virtual const cocos2d::BlendFunc & getBlendFunc() const override { return _blendFunc; }
 
-    // debug draw show, bone's debugdraw can be draw when bone is visible && enable debug draw
+    // debug draw show, bone's debugdraw can be draw when bone is visible
+    // when bone's added to skeleton, DebugDrawEnabled controled by skeleton's DebugDrawEnabled
     virtual void setDebugDrawEnabled(bool isDebugDraw);
     virtual bool isDebugDrawEnabled() const { return _isRackShow; }
 
@@ -184,6 +185,12 @@ protected:
     virtual void updateVertices();
     virtual void updateColor() override;
 
+    // bone's color and opacity cannot cascade to bone
+    virtual void updateDisplayedColor(const cocos2d::Color3B& parentColor) override;
+    virtual void updateDisplayedOpacity(GLubyte parentOpacity) override;
+    virtual void disableCascadeOpacity() override;
+    virtual void disableCascadeColor() override;
+
     virtual void onDraw(const cocos2d::Mat4 &transform, uint32_t flags); 
 
     // override Node::visit, just visit bones in children
@@ -195,7 +202,11 @@ protected:
 
     // a help funciton for SkeletonNode
     // @param bone, visit bone's skins
-    virtual void visitSkins(cocos2d::Renderer* renderer, BoneNode* bone);
+    virtual void visitSkins(cocos2d::Renderer* renderer, BoneNode* bone) const;
+
+    // a help function for SkeletonNode
+    // set bone's rootSkeleton = skeleton
+    void setRootSkeleton(BoneNode* bone, SkeletonNode* skeleton) const;
 protected:
     cocos2d::CustomCommand _customCommand;
     cocos2d::BlendFunc     _blendFunc;

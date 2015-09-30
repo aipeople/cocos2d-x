@@ -23,6 +23,7 @@ CocoStudioActionTimelineTests::CocoStudioActionTimelineTests()
     ADD_TEST_CASE(TestActionTimelineEase);
     ADD_TEST_CASE(TestActionTimelineSkeleton);
     ADD_TEST_CASE(TestTimelineExtensionData);
+    ADD_TEST_CASE(TestActionTimelineBlendFuncFrame);
 }
 
 CocoStudioActionTimelineTests::~CocoStudioActionTimelineTests()
@@ -343,14 +344,10 @@ void TestActionTimelineSkeleton::onEnter()
     boneDrawsBtn->setPosition(Vec2(VisibleRect::right().x - 30, VisibleRect::top().y - 30));
     boneDrawsBtn->setTitleText("Draw bone");
 
-    _isAllBonesDraw = true;
-    skeletonNode->setDebugDrawEnabled(_isAllBonesDraw);
-    setAllSubBonesDebugDraw(skeletonNode, _isAllBonesDraw);
+    skeletonNode->setDebugDrawEnabled(true);
     boneDrawsBtn->addClickEventListener([skeletonNode, this](Ref* sender)
     {
-        _isAllBonesDraw = !_isAllBonesDraw;
-        skeletonNode->setDebugDrawEnabled(_isAllBonesDraw);
-        setAllSubBonesDebugDraw(skeletonNode, _isAllBonesDraw);
+        skeletonNode->setDebugDrawEnabled(!skeletonNode->isDebugDrawEnabled());
     });
 
 
@@ -553,16 +550,6 @@ std::string TestActionTimelineSkeleton::title() const
     return "Test ActionTimeline Skeleton";
 }
 
-void TestActionTimelineSkeleton::setAllSubBonesDebugDraw(SkeletonNode* rootSkeleton, bool isShow)
-{
-    auto boneMap = rootSkeleton->getAllSubBonesMap();
-    for (auto& bonePair : boneMap)
-    {
-        bonePair.second->setDebugDrawEnabled(isShow);
-    }
-}
-
-
 // TestTimelineExtensionData
 void TestTimelineExtensionData::onEnter()
 {
@@ -591,4 +578,22 @@ void TestTimelineExtensionData::onEnter()
 std::string TestTimelineExtensionData::title() const
 {
     return "Test Timeline extension data";
+}
+
+// TestActionTimelineBlendFuncFrame
+void TestActionTimelineBlendFuncFrame::onEnter()
+{
+    ActionTimelineBaseTest::onEnter();
+    Node* node = CSLoader::createNode("ActionTimeline/skeletonBlendFuncFrame.csb");
+    ActionTimeline* action = CSLoader::createTimeline("ActionTimeline/skeletonBlendFuncFrame.csb");
+    node->runAction(action);
+    node->setScale(0.2f);
+    node->setPosition(VisibleRect::center());
+    this->addChild(node);
+    action->gotoFrameAndPlay(0);
+}
+
+std::string TestActionTimelineBlendFuncFrame::title() const
+{
+    return "Test ActionTimeline BlendFunc Frame";
 }
