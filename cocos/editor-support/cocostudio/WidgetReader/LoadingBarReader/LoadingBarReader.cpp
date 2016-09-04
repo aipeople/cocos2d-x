@@ -3,6 +3,9 @@
 #include "editor-support/cocostudio/WidgetReader/LoadingBarReader/LoadingBarReader.h"
 
 #include "ui/UILoadingBar.h"
+#include "2d/CCSpriteFrameCache.h"
+#include "platform/CCFileUtils.h"
+
 #include "editor-support/cocostudio/CocoLoader.h"
 #include "editor-support/cocostudio/CSParseBinary_generated.h"
 #include "editor-support/cocostudio/FlatBuffersSerialize.h"
@@ -258,6 +261,11 @@ namespace cocostudio
                 if (FileUtils::getInstance()->isFileExist(imageFileName))
                 {
                     fileExist = true;
+                }
+                else if (SpriteFrameCache::getInstance()->getSpriteFrameByName(imageFileName))
+                {
+                    fileExist = true;
+                    imageFileNameType = 1;
                 }
                 else
                 {

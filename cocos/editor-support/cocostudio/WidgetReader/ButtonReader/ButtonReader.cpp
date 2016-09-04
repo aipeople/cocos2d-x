@@ -3,6 +3,9 @@
 #include "editor-support/cocostudio/WidgetReader/ButtonReader/ButtonReader.h"
 
 #include "ui/UIButton.h"
+#include "2d/CCSpriteFrameCache.h"
+#include "2d/CCLabel.h"
+#include "platform/CCFileUtils.h"
 #include "editor-support/cocostudio/CocoLoader.h"
 #include "editor-support/cocostudio/CSParseBinary_generated.h"
 #include "editor-support/cocostudio/FlatBuffersSerialize.h"
@@ -669,6 +672,11 @@ namespace cocostudio
                 if (FileUtils::getInstance()->isFileExist(normalTexturePath))
                 {
                     normalFileExist = true;
+                }
+                else if (SpriteFrameCache::getInstance()->getSpriteFrameByName(normalTexturePath))
+                {
+                    normalFileExist = true;
+                    normalType = 1;
                 }
                 else
                 {
