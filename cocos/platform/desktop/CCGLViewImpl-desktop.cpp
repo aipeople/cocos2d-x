@@ -306,7 +306,7 @@ GLViewImpl* GLViewImpl::create(const std::string& viewName)
 GLViewImpl* GLViewImpl::create(const std::string& viewName, bool resizable)
 {
     auto ret = new (std::nothrow) GLViewImpl;
-    if(ret && ret->initWithRect(viewName, Rect(0, 0, 375 *2, 667 *2), 0.5, false)) {
+    if(ret && ret->initWithRect(viewName, Rect(0, 0, 960, 640), 1.0f, resizable)) {
         ret->autorelease();
         return ret;
     }
