@@ -44,7 +44,7 @@ NS_CC_BEGIN
 
 class Physics3DRigidBody;
 
-/** @brief Physics3DConstraint: Constraint affects the movement of physics object, it usually connet one or two physics object. There are some types of physics constraints. */
+/** @brief Physics3DConstraint: Constraint affects the movement of physics object, it usually connect one or two physics object. There are some types of physics constraints. */
 class CC_DLL Physics3DConstraint : public Ref
 {
 public:
@@ -110,7 +110,7 @@ public:
     /**
      * override the number of constraint solver iterations used to solve this constraint, -1 will use the default number of iterations, as specified in SolverInfo.m_numIterations
      */
-    void setOverrideNumSolverIterations(int overideNumIterations);
+    void setOverrideNumSolverIterations(int overrideNumIterations);
     
 #if (CC_ENABLE_BULLET_INTEGRATION)
     btTypedConstraint* getbtContraint() { return _constraint; }
