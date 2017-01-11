@@ -50,6 +50,8 @@ const int PhysicsWorld::DEBUGDRAW_JOINT = 0x02;
 const int PhysicsWorld::DEBUGDRAW_CONTACT = 0x04;
 const int PhysicsWorld::DEBUGDRAW_ALL = DEBUGDRAW_SHAPE | DEBUGDRAW_JOINT | DEBUGDRAW_CONTACT;
 
+const std::string PhysicsWorld::STEP_EVENT_NAME = "STEP_EVENT_NAME";
+
 namespace
 {
     typedef struct RayCastCallbackInfo
@@ -910,6 +912,12 @@ void PhysicsWorld::update(float delta, bool userCall/* = false*/)
             while(_updateTime>step)
             {
                 _updateTime-=step;
+                
+                auto data = dt;
+                Director::getInstance()->getEventDispatcher()
+                    ->dispatchCustomEvent(
+                        STEP_EVENT_NAME, static_cast<void *>(&data)
+                    );
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WINRT || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
 				cpSpaceStep(_cpSpace, dt);
 #else

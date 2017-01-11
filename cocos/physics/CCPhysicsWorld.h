@@ -98,6 +98,9 @@ typedef PhysicsQueryRectCallbackFunc PhysicsQueryPointCallbackFunc;
 class CC_DLL PhysicsWorld
 {
 public:
+    static const std::string STEP_EVENT_NAME;
+    
+public:
     static const int DEBUGDRAW_NONE;        ///< draw nothing
     static const int DEBUGDRAW_SHAPE;       ///< draw shapes
     static const int DEBUGDRAW_JOINT;       ///< draw joints
