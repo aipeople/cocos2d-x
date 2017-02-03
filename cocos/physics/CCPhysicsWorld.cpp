@@ -50,7 +50,8 @@ const int PhysicsWorld::DEBUGDRAW_JOINT = 0x02;
 const int PhysicsWorld::DEBUGDRAW_CONTACT = 0x04;
 const int PhysicsWorld::DEBUGDRAW_ALL = DEBUGDRAW_SHAPE | DEBUGDRAW_JOINT | DEBUGDRAW_CONTACT;
 
-const std::string PhysicsWorld::STEP_EVENT_NAME = "STEP_EVENT_NAME";
+const std::string PhysicsWorld::EVENT_BEFORE_STEP  = "EVENT_BEFORE_STEP";
+const std::string PhysicsWorld::EVENT_AFTER_UPDATE = "EVENT_AFTER_UPDATE";
 
 namespace
 {
@@ -916,7 +917,7 @@ void PhysicsWorld::update(float delta, bool userCall/* = false*/)
                 auto data = dt;
                 Director::getInstance()->getEventDispatcher()
                     ->dispatchCustomEvent(
-                        STEP_EVENT_NAME, static_cast<void *>(&data)
+                        EVENT_BEFORE_STEP, static_cast<void *>(&data)
                     );
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WINRT || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
 				cpSpaceStep(_cpSpace, dt);
@@ -956,6 +957,12 @@ void PhysicsWorld::update(float delta, bool userCall/* = false*/)
     // Update physics position, should loop as the same sequence as node tree.
     // PhysicsWorld::afterSimulation() will depend on the sequence.
     afterSimulation(_scene, sceneToWorldTransform, 0.f);
+    
+    auto data = delta;
+    Director::getInstance()->getEventDispatcher()
+        ->dispatchCustomEvent(
+            EVENT_AFTER_UPDATE, static_cast<void *>(&data)
+        );
 }
 
 PhysicsWorld* PhysicsWorld::construct(Scene* scene)
