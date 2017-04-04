@@ -344,7 +344,7 @@ public:
      * @attention You need to setAutoStep(false) first before it can work.
      * @param   delta   A float number.
      */
-    void step(float delta);
+    void step(float delta, bool userCall = true);
     
 protected:
     static PhysicsWorld* construct(Scene* scene);

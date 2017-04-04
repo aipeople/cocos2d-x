@@ -859,7 +859,7 @@ void PhysicsWorld::setSubsteps(int steps)
     }
 }
 
-void PhysicsWorld::step(float delta)
+void PhysicsWorld::step(float delta, bool userCall)
 {
     if (_autoStep)
     {
@@ -867,7 +867,7 @@ void PhysicsWorld::step(float delta)
     }
     else
     {
-        update(delta, true);
+        update(delta, userCall);
     }
 }
 
@@ -933,6 +933,11 @@ void PhysicsWorld::update(float delta, bool userCall/* = false*/)
                 const float dt = _updateTime * _speed / _substeps;
                 for (int i = 0; i < _substeps; ++i)
                 {
+                    auto data = dt;
+                    Director::getInstance()->getEventDispatcher()
+                        ->dispatchCustomEvent(
+                            EVENT_BEFORE_STEP, static_cast<void *>(&data)
+                        );
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WINRT || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
 					cpSpaceStep(_cpSpace, dt);
 #else
