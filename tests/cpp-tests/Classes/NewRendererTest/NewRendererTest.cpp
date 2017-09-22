@@ -410,7 +410,7 @@ std::string VBOFullTest::title() const
 
 std::string VBOFullTest::subtitle() const
 {
-    return "VBO full Test, everthing should render normally";
+    return "VBO full Test, everything should render normally";
 }
 
 CaptureScreenTest::CaptureScreenTest()
@@ -461,6 +461,8 @@ void CaptureScreenTest::onCaptured(Ref*)
     Director::getInstance()->getTextureCache()->removeTextureForKey(_filename);
     removeChildByTag(childTag);
     _filename = "CaptureScreenTest.png";
+    // retain it to avoid crash caused by invoking afterCaptured 
+    this->retain();
     utils::captureScreen(CC_CALLBACK_2(CaptureScreenTest::afterCaptured, this), _filename);
 }
 
@@ -479,6 +481,9 @@ void CaptureScreenTest::afterCaptured(bool succeed, const std::string& outputFil
     {
         log("Capture screen failed.");
     }
+
+    // release it since it is retained in `CaptureScreenTest::onCaptured()`
+    this->release();
 }
 
 CaptureNodeTest::CaptureNodeTest()
