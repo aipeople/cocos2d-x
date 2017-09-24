@@ -927,6 +927,13 @@ void EventDispatcher::dispatchEvent(Event* event)
         auto listeners = iter->second;
         
         auto onEvent = [&event](EventListener* listener) -> bool{
+            
+            auto node = listener->getAssociatedNode();
+            if (listener->getType() != EventListener::Type::CUSTOM && node && !node->isVisible())
+            {
+                return false;
+            }
+            
             event->setCurrentTarget(listener->getAssociatedNode());
             listener->_onEvent(event);
             return event->isStopped();
@@ -981,6 +988,11 @@ void EventDispatcher::dispatchTouchEvent(EventTouch* event)
 
             auto onTouchEvent = [&](EventListener* l) -> bool { // Return true to break
                 EventListenerTouchOneByOne* listener = static_cast<EventListenerTouchOneByOne*>(l);
+                
+                // Skip if node is invisible
+                if (!listener->_node->isVisible()) {
+                    return false;
+                }
                 
                 // Skip if the listener was removed.
                 if (!listener->_isRegistered)
