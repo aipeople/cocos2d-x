@@ -928,10 +928,21 @@ void EventDispatcher::dispatchEvent(Event* event)
         
         auto onEvent = [&event](EventListener* listener) -> bool{
             
-            auto node = listener->getAssociatedNode();
-            if (listener->getType() != EventListener::Type::CUSTOM && node && !(node->isVisible() && node->getScene()))
+            if (listener->getType() != EventListener::Type::CUSTOM)
             {
-                return false;
+                auto node = listener->getAssociatedNode();
+                while (node) {
+                    if (node->isVisible()) {
+                        if (dynamic_cast<Scene *>(node)) {
+                            break;
+                        } else {
+                            node = node->getParent();
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                if (!node) return false;
             }
             
             event->setCurrentTarget(listener->getAssociatedNode());
@@ -990,9 +1001,19 @@ void EventDispatcher::dispatchTouchEvent(EventTouch* event)
                 EventListenerTouchOneByOne* listener = static_cast<EventListenerTouchOneByOne*>(l);
                 
                 // Skip if node is invisible
-                if (listener->_node && !(listener->_node->isVisible() && listener->_node->getScene())) {
-                    return false;
+                auto node = listener->getAssociatedNode();
+                while (node) {
+                    if (node->isVisible()) {
+                        if (dynamic_cast<Scene *>(node)) {
+                            break;
+                        } else {
+                            node = node->getParent();
+                        }
+                    } else {
+                        return false;
+                    }
                 }
+                if (!node) return false;
                 
                 // Skip if the listener was removed.
                 if (!listener->_isRegistered)
