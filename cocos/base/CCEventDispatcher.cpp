@@ -929,7 +929,7 @@ void EventDispatcher::dispatchEvent(Event* event)
         auto onEvent = [&event](EventListener* listener) -> bool{
             
             auto node = listener->getAssociatedNode();
-            if (listener->getType() != EventListener::Type::CUSTOM && node && !node->isVisible())
+            if (listener->getType() != EventListener::Type::CUSTOM && node && !(node->isVisible() && node->getScene()))
             {
                 return false;
             }
@@ -990,7 +990,7 @@ void EventDispatcher::dispatchTouchEvent(EventTouch* event)
                 EventListenerTouchOneByOne* listener = static_cast<EventListenerTouchOneByOne*>(l);
                 
                 // Skip if node is invisible
-                if (!listener->_node->isVisible()) {
+                if (listener->_node && !(listener->_node->isVisible() && listener->_node->getScene())) {
                     return false;
                 }
                 
