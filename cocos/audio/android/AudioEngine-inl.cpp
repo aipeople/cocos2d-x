@@ -44,6 +44,7 @@
 #include "base/CCEventType.h"
 #include "base/CCEventListenerCustom.h"
 #include "base/ccUTF8.h"
+#include "base/ZipUtils.h"
 #include "platform/android/CCFileUtils-android.h"
 #include "platform/android/jni/Java_org_cocos2dx_lib_Cocos2dxHelper.h"
 
@@ -92,7 +93,8 @@ static CallerThreadUtils __callerThreadUtils;
 static int fdGetter(const std::string& url, off_t* start, off_t* length)
 {
     int fd = -1;
-    if (cocos2d::FileUtilsAndroid::getObbFile() != nullptr)
+    if (cocos2d::FileUtilsAndroid::getObbFile() != nullptr &&
+        cocos2d::FileUtilsAndroid::getObbFile()->fileExists(url))
     {
         fd = getObbAssetFileDescriptorJNI(url.c_str(), start, length);
     } 
