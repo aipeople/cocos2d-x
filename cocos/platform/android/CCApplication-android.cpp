@@ -117,7 +117,25 @@ LanguageType Application::getCurrentLanguage()
 
     if (0 == strcmp("zh", pLanguageName))
     {
-        ret = LanguageType::CHINESE;
+        std::string locale = JniHelper::callStaticStringMethod(helperClassName, "getCurrentLocale");
+
+        if (locale.find("Hant") != std::string::npos)
+        {
+            ret = LanguageType::CHINESE_TRADITIONAL;
+        }
+        else if (locale.find("Hans") != std::string::npos)
+        {
+            ret = LanguageType::CHINESE_SIMPLIFIED;
+        }
+        else if (locale.find("TW") != std::string::npos ||
+            locale.find("HK") != std::string::npos)
+        {
+            ret = LanguageType::CHINESE_TRADITIONAL;
+        }
+        else
+        {
+            ret = LanguageType::CHINESE_SIMPLIFIED;
+        }
     }
     else if (0 == strcmp("en", pLanguageName))
     {
