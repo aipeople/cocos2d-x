@@ -3,6 +3,7 @@ Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -296,6 +297,8 @@ protected:
     void updateVertexBuffer();
     void updateIndexBuffer();
     void updatePrimitives();
+
+    virtual void setOpacity(GLubyte opacity) override;
 protected:
     
     //! name of the layer
@@ -334,7 +337,11 @@ protected:
     bool _quadsDirty;
     std::vector<int> _tileToQuadIndex;
     std::vector<V3F_C4B_T2F_Quad> _totalQuads;
+#ifdef CC_FAST_TILEMAP_32_BIT_INDICES
+    std::vector<GLuint> _indices;
+#else
     std::vector<GLushort> _indices;
+#endif
     std::map<int/*vertexZ*/, int/*offset to _indices by quads*/> _indicesVertexZOffsets;
     std::unordered_map<int/*vertexZ*/, int/*number to quads*/> _indicesVertexZNumber;
     std::vector<PrimitiveCommand> _renderCommands;

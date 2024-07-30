@@ -1,3 +1,27 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
 #include "RenderTextureTest.h"
 
 USING_NS_CC;
@@ -14,10 +38,10 @@ RenderTextureTests::RenderTextureTests()
     ADD_TEST_CASE(RenderTexturePartTest);
     ADD_TEST_CASE(Issue16113Test);
     ADD_TEST_CASE(RenderTextureWithSprite3DIssue16894);
-};
+}
 
 /**
-* Impelmentation of RenderTextureSave
+* Implementation of RenderTextureSave
 */
 RenderTextureSave::RenderTextureSave()
 {
@@ -28,7 +52,7 @@ RenderTextureSave::RenderTextureSave()
     _target->retain();
     _target->setPosition(Vec2(s.width / 2, s.height / 2));
 
-    // note that the render texture is a Node, and contains a sprite of its texture for convience,
+    // note that the render texture is a Node, and contains a sprite of its texture for convenience,
     // so we can just parent it to the scene like any other Node
     this->addChild(_target, -1);
     
@@ -38,12 +62,15 @@ RenderTextureSave::RenderTextureSave()
     
     // Save Image menu
     MenuItemFont::setFontSize(16);
-    auto item1 = MenuItemFont::create("Save Image", CC_CALLBACK_1(RenderTextureSave::saveImage, this));
-    auto item2 = MenuItemFont::create("Clear", CC_CALLBACK_1(RenderTextureSave::clearImage, this));
-    auto menu = Menu::create(item1, item2, nullptr);
+    auto item1 = MenuItemFont::create("Save Image PMA", CC_CALLBACK_1(RenderTextureSave::saveImageWithPremultipliedAlpha, this));
+    auto item2 = MenuItemFont::create("Save Image Non-PMA", CC_CALLBACK_1(RenderTextureSave::saveImageWithNonPremultipliedAlpha, this));
+    auto item3 = MenuItemFont::create("Add Image", CC_CALLBACK_1(RenderTextureSave::addImage, this));
+    auto item4 = MenuItemFont::create("Clear to Random", CC_CALLBACK_1(RenderTextureSave::clearImage, this));
+    auto item5 = MenuItemFont::create("Clear to Transparent", CC_CALLBACK_1(RenderTextureSave::clearImageTransparent, this));
+    auto menu = Menu::create(item1, item2, item3, item4, item5, nullptr);
     this->addChild(menu);
     menu->alignItemsVertically();
-    menu->setPosition(Vec2(VisibleRect::rightTop().x - 80, VisibleRect::rightTop().y - 30));
+    menu->setPosition(Vec2(VisibleRect::rightTop().x - 80, VisibleRect::rightTop().y - 100));
 }
 
 std::string RenderTextureSave::title() const
@@ -56,17 +83,46 @@ std::string RenderTextureSave::subtitle() const
     return "Press 'Save Image' to create an snapshot of the render texture";
 }
 
-void RenderTextureSave::clearImage(cocos2d::Ref *sender)
+void RenderTextureSave::clearImage(cocos2d::Ref* sender)
 {
     _target->clear(CCRANDOM_0_1(), CCRANDOM_0_1(), CCRANDOM_0_1(), CCRANDOM_0_1());
 }
 
-void RenderTextureSave::saveImage(cocos2d::Ref *sender)
+void RenderTextureSave::clearImageTransparent(cocos2d::Ref* sender)
+{
+    _target->clear(0, 0, 0, 0);
+}
+
+void RenderTextureSave::saveImageWithPremultipliedAlpha(cocos2d::Ref* sender)
 {
     static int counter = 0;
 
     char png[20];
-    sprintf(png, "image-%d.png", counter);
+    sprintf(png, "image-pma-%d.png", counter);
+
+    auto callback = [&](RenderTexture* rt, const std::string& path)
+    {
+        auto sprite = Sprite::create(path);
+        addChild(sprite);
+        sprite->setScale(0.3f);
+        sprite->setPosition(Vec2(40, 40));
+        sprite->setRotation(counter * 3);
+    };
+
+    _target->saveToFile(png, Image::Format::PNG, true, callback);
+    //Add this function to avoid crash if we switch to a new scene.
+    Director::getInstance()->getRenderer()->render();
+    CCLOG("Image saved %s", png);
+
+    counter++;
+}
+
+void RenderTextureSave::saveImageWithNonPremultipliedAlpha(cocos2d::Ref *sender)
+{
+    static int counter = 0;
+
+    char png[20];
+    sprintf(png, "image-no-pma-%d.png", counter);
     
     auto callback = [&](RenderTexture* rt, const std::string& path)
     {
@@ -77,12 +133,27 @@ void RenderTextureSave::saveImage(cocos2d::Ref *sender)
         sprite->setRotation(counter * 3);
     };
     
-    _target->saveToFile(png, Image::Format::PNG, true, callback);
+    _target->saveToFileAsNonPMA(png, Image::Format::PNG, true, callback);
     //Add this function to avoid crash if we switch to a new scene.
     Director::getInstance()->getRenderer()->render();
     CCLOG("Image saved %s", png);
 
     counter++;
+}
+
+void RenderTextureSave::addImage(cocos2d::Ref* sender)
+{
+    auto s = Director::getInstance()->getWinSize();
+
+    // begin drawing to the render texture
+    _target->begin();
+
+    Sprite* sprite = Sprite::create("Images/test-rgba1.png");
+    sprite->setPosition(sprite->getContentSize().width + CCRANDOM_0_1() * (s.width - sprite->getContentSize().width), sprite->getContentSize().height + CCRANDOM_0_1() * (s.height - sprite->getContentSize().height));
+    sprite->visit();
+
+    // finish drawing and return context back to the screen
+    _target->end();
 }
 
 RenderTextureSave::~RenderTextureSave()
@@ -136,7 +207,7 @@ void RenderTextureSave::onTouchesMoved(const std::vector<Touch*>& touches, Event
 }
 
 /**
- * Impelmentation of RenderTextureIssue937
+ * Implementation of RenderTextureIssue937
  */
 
 RenderTextureIssue937::RenderTextureIssue937()
@@ -201,7 +272,7 @@ std::string RenderTextureIssue937::subtitle() const
 }
 
 /**
-* Impelmentation of RenderTextureZbuffer
+* Implementation of RenderTextureZbuffer
 */
 
 RenderTextureZbuffer::RenderTextureZbuffer()
@@ -449,7 +520,7 @@ void RenderTextureTestDepthStencil::draw(Renderer *renderer, const Mat4 &transfo
     _spriteDS->visit();
     
     _renderCmds[2].init(_globalZOrder, transform, flags);
-    _renderCmds[2].func = CC_CALLBACK_0(RenderTextureTestDepthStencil::onBeforDraw, this);
+    _renderCmds[2].func = CC_CALLBACK_0(RenderTextureTestDepthStencil::onBeforeDraw, this);
     renderer->addCommand(&_renderCmds[2]);
 
     _spriteDraw->visit();
@@ -484,7 +555,7 @@ void RenderTextureTestDepthStencil::onBeforeStencil()
 //    RenderState::StateBlock::_defaultState->setStencilOperation(RenderState::STENCIL_OP_REPLACE, RenderState::STENCIL_OP_REPLACE, RenderState::STENCIL_OP_REPLACE);
 }
 
-void RenderTextureTestDepthStencil::onBeforDraw()
+void RenderTextureTestDepthStencil::onBeforeDraw()
 {
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 

@@ -4,6 +4,7 @@ Copyright (c) 2009      Leonardo Kasperavičius
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
  
@@ -239,11 +240,7 @@ void ParticleSystemQuad::setDisplayFrame(SpriteFrame *spriteFrame)
     CCASSERT(spriteFrame->getOffsetInPixels().isZero(), 
              "QuadParticle only supports SpriteFrames with no offsets");
 
-    // update texture before updating texture rect
-    if ( !_texture || spriteFrame->getTexture()->getName() != _texture->getName())
-    {
-        this->setTexture(spriteFrame->getTexture());
-    }
+    this->setTextureWithRect(spriteFrame->getTexture(), spriteFrame->getRect());
 }
 
 void ParticleSystemQuad::initIndices()
@@ -548,10 +545,15 @@ void ParticleSystemQuad::setTotalParticles(int tp)
 
 void ParticleSystemQuad::setupVBOandVAO()
 {
-    // clean VAO
     glDeleteBuffers(2, &_buffersVBO[0]);
-    glDeleteVertexArrays(1, &_VAOname);
-    GL::bindVAO(0);
+
+    // clean VAO
+    if (_VAOname)
+    {
+        glDeleteVertexArrays(1, &_VAOname);
+        GL::bindVAO(0);
+        _VAOname = 0;
+    }
     
     glGenVertexArrays(1, &_VAOname);
     GL::bindVAO(_VAOname);

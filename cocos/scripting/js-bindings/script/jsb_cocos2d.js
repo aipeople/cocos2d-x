@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 Chukong Technologies Inc.
+ * Copyright (c) 2013-2016 Chukong Technologies Inc.
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@
 
 // CCConfig.js
 //
-cc.ENGINE_VERSION = "Cocos2d-JS v3.13";
+cc.ENGINE_VERSION = "Cocos2d-JS v3.17";
 
 cc.FIX_ARTIFACTS_BY_STRECHING_TEXEL = 0;
 cc.DIRECTOR_STATS_POSITION = {x: 0, y: 0};
@@ -128,7 +129,8 @@ cc.MENU_STATE_TRACKING_TOUCH = 1;
 cc.MENU_HANDLER_PRIORITY = -128;
 cc.DEFAULT_PADDING = 5;
 
-cc.Scheduler.PRIORITY_SYSTEM    = -2147483648;
+cc.Scheduler.PRIORITY_SYSTEM = -2147483648;
+cc.Scheduler.PRIORITY_NON_SYSTEM = cc.Scheduler.PRIORITY_SYSTEM + 1;
 
 var _Class = cc.Texture2D;
 
@@ -229,8 +231,6 @@ cc.stencilBits = -1;           //CCClippingNode.js
 
 cc.g_NumberOfDraws = 0;        //CCDirector.js
 
-cc.PRIORITY_NON_SYSTEM = cc.PRIORITY_SYSTEM + 1;          //CCScheduler.js
-
 cc.s_globalOrderOfArrival = 1;
 
 cc.Event.TOUCH = 0;                  //CCEvent.js
@@ -300,6 +300,12 @@ cc.INVALID_INDEX = -1;
  * @type Number
  */
 cc.PI = Math.PI;
+
+/**
+ * @constant
+ * @type Number
+ */
+cc.PI2 = Math.PI * 2;
 
 /**
  * @constant
@@ -1773,8 +1779,10 @@ cc._DrawNode.prototype.drawPoly = function (verts, fillColor, borderWidth, borde
     cc._DrawNode.prototype.drawPolygon.call(this, verts, verts.length, fillColor, borderWidth, borderColor);
 }
 cc.DrawNode = cc._DrawNode.extend({
-    _drawColor: cc.color(255, 255, 255, 255),
+    _drawColor: null,
     _lineWidth: 1,
+
+    release: function () {},
 
     setLineWidth: function (width) {
         this._lineWidth = width;
@@ -1887,7 +1895,9 @@ cc.DrawNode = cc._DrawNode.extend({
         cc._DrawNode.prototype.drawDot.call(this, pos, radius, color);
     },
 
-    drawSegment:function (from, to, lineWidth = this._lineWidth, color = this._drawColor) {
+    drawSegment:function (from, to, lineWidth, color) {
+        lineWidth = lineWidth || this._lineWidth;
+        color = color || this._drawColor;
         cc._DrawNode.prototype.drawSegment.call(this, from, to, lineWidth, color);
     },
 
@@ -2565,13 +2575,21 @@ cc.Layer.prototype.isBaked = function() {return false;};
 //
 cc.RenderTexture.prototype._beginWithClear = cc.RenderTexture.prototype.beginWithClear;
 cc.RenderTexture.prototype.beginWithClear = function(r, g, b, a, depthValue, stencilValue) {
-    arguments[0] /= 255;
-    arguments[1] /= 255;
-    arguments[2] /= 255;
-    arguments[3] /= 255;
-    this._beginWithClear.apply(this, arguments);
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    a /= 255;
+    this._beginWithClear(r, g, b, a, depthValue, stencilValue);
 };
 
+cc.RenderTexture.prototype._clear = cc.RenderTexture.prototype.clear;
+cc.RenderTexture.prototype.clear = function(r, g, b, a) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    a /= 255;
+    this._clear(r, g, b, a);
+};
 
 //
 // Texture2D setTexParameters
@@ -2611,17 +2629,17 @@ _p.setNormalSpriteFrame = function(frame) {
     if (frame[0] == "#") 
         frame = cc.spriteFrameCache.getSpriteFrame(frame.substr(1));
     this._setNormalSpriteFrame(frame);
-}
+};
 _p.setSelectedSpriteFrame = function(frame) {
     if (frame[0] == "#") 
         frame = cc.spriteFrameCache.getSpriteFrame(frame.substr(1));
     this._setSelectedSpriteFrame(frame);
-}
+};
 _p.setDisabledSpriteFrame = function(frame) {
     if (frame[0] == "#") 
         frame = cc.spriteFrameCache.getSpriteFrame(frame.substr(1));
     this._setDisabledSpriteFrame(frame);
-}
+};
 
 cc.MenuItemToggle.prototype.selectedItem = cc.MenuItemToggle.prototype.getSelectedItem;
 
@@ -2661,7 +2679,7 @@ cc.LabelTTF.prototype._enableShadow = cc.LabelTTF.prototype.enableShadow;
 cc.LabelTTF.prototype.enableShadow = function (shadowColor, offset, blurRadius) {
     var opacity = 1;
     this._enableShadow(offset, opacity, blurRadius);
-}
+};
 
 cc.LabelTTF.prototype.setDrawMode = function () {};
 
@@ -2723,7 +2741,7 @@ _p.schedule = function (callback, target, interval, repeat, delay, paused, key) 
         key = target.__instanceId + "";
     }
     this._schedule(callback, target, interval, repeat, delay, paused, key);
-}
+};
 
 
 cc._NodeGrid = cc.NodeGrid;

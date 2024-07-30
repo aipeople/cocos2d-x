@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2012 cocos2d-x.org
  Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -26,7 +27,7 @@
 #include "MaterialSystemTest.h"
 
 #include <ctime>
-#include <spine/spine-cocos2dx.h>
+#include "spine/spine-cocos2dx.h"
 
 #include "../testResource.h"
 #include "cocos2d.h"
@@ -168,12 +169,12 @@ class EffectAutoBindingResolver : public GLProgramState::AutoBindingResolver
 
 bool EffectAutoBindingResolver::resolveAutoBinding(GLProgramState* glProgramState, Node* node, const std::string& uniform, const std::string& autoBinding)
 {
-    if (autoBinding.compare("DYNAMIC_RADIUS")==0)
+    if (autoBinding == "DYNAMIC_RADIUS")
     {
         glProgramState->setUniformCallback(uniform, CC_CALLBACK_2(EffectAutoBindingResolver::callbackRadius, this));
         return true;
     }
-    else if (autoBinding.compare("OUTLINE_COLOR")==0)
+    else if (autoBinding == "OUTLINE_COLOR")
     {
         glProgramState->setUniformCallback(uniform, CC_CALLBACK_2(EffectAutoBindingResolver::callbackColor, this));
         return true;
@@ -404,7 +405,7 @@ void Material_parsePerformance::onEnter()
     
     addChild(slider);
     
-    auto label = Label::createWithSystemFont("Max parsing count is 10000, which may crash because of high memory comsumption.", "Helvetica", 10);
+    auto label = Label::createWithSystemFont("Max parsing count is 10000, which may crash because of high memory consumption.", "Helvetica", 10);
     label->setPosition(Vec2(screenSize.width / 2.0f, screenSize.height / 2.0f - 20));
     addChild(label);
     label = Label::createWithSystemFont("Slide to test parsing performance", "Helvetica", 10);
@@ -464,7 +465,7 @@ void Material_invalidate::onEnter()
     sprite->runAction(repeat);
 
     // SPINE
-    auto skeletonNode = spine::SkeletonAnimation::createWithJsonFile("spine/goblins.json", "spine/goblins.atlas", 1.5f);
+    auto skeletonNode = spine::SkeletonAnimation::createWithJsonFile("spine/goblins-pro.json", "spine/goblins.atlas", 1.5f);
     skeletonNode->setAnimation(0, "walk", true);
     skeletonNode->setSkin("goblin");
 
@@ -533,7 +534,7 @@ void Material_renderState::onEnter()
     sprite->runAction(repeat);
 
     // SPINE
-    auto skeletonNode = spine::SkeletonAnimation::createWithJsonFile("spine/goblins.json", "spine/goblins.atlas", 1.5f);
+    auto skeletonNode = spine::SkeletonAnimation::createWithJsonFile("spine/goblins-pro.json", "spine/goblins.atlas", 1.5f);
     skeletonNode->setAnimation(0, "walk", true);
     skeletonNode->setSkin("goblin");
 

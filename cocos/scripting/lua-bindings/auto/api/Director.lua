@@ -58,6 +58,12 @@
 -- @return Director#Director self (return value: cc.Director)
         
 --------------------------------
+-- 
+-- @function [parent=#Director] getDeltaTime 
+-- @param self
+-- @return float#float ret (return value: float)
+        
+--------------------------------
 -- Gets content scale factor.<br>
 -- see Director::setContentScaleFactor()
 -- @function [parent=#Director] getContentScaleFactor 
@@ -71,10 +77,10 @@
 -- @return size_table#size_table ret (return value: size_table)
         
 --------------------------------
--- 
--- @function [parent=#Director] getDeltaTime 
+-- Returns safe area rectangle of the OpenGL view in points.
+-- @function [parent=#Director] getSafeAreaRect 
 -- @param self
--- @return float#float ret (return value: float)
+-- @return rect_table#rect_table ret (return value: rect_table)
         
 --------------------------------
 --  Sets the OpenGL default values.<br>
@@ -155,11 +161,13 @@
 -- @return vec2_table#vec2_table ret (return value: vec2_table)
         
 --------------------------------
--- 
--- @function [parent=#Director] mainLoop 
+-- @overload self, float         
+-- @overload self         
+-- @function [parent=#Director] mainLoop
 -- @param self
+-- @param #float dt
 -- @return Director#Director self (return value: cc.Director)
-        
+
 --------------------------------
 --  Enables/disables OpenGL depth test. 
 -- @function [parent=#Director] setDepthTest 
@@ -506,6 +514,13 @@
 -- @function [parent=#Director] getAnimationInterval 
 -- @param self
 -- @return float#float ret (return value: float)
+        
+--------------------------------
+--  Gets clear values for the color buffers.<br>
+-- js NA
+-- @function [parent=#Director] getClearColor 
+-- @param self
+-- @return color4f_table#color4f_table ret (return value: color4f_table)
         
 --------------------------------
 --  Whether or not the Director is paused. 

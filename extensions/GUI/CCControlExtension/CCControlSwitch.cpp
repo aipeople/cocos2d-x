@@ -5,6 +5,8 @@
  * Copyright 2012 Yannick Loriot. All rights reserved.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -214,7 +216,7 @@ bool ControlSwitchSprite::initWithMaskSprite(
     return false;
 }
 
-void ControlSwitchSprite::updateTweenAction(float value, const std::string& /*key*/)
+void ControlSwitchSprite::updateTweenAction(float value, const std::string& key)
 {
     CCLOGINFO("key = %s, value = %f", key.c_str(), value);
     setSliderXPosition(value);

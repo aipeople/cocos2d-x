@@ -3,6 +3,7 @@ Copyright (c) 2008-2011 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -144,8 +145,7 @@ SpriteFrame* SpriteFrame::clone() const
 {
 	// no copy constructor	
     SpriteFrame *copy = new (std::nothrow) SpriteFrame();
-    copy->initWithTextureFilename(_textureFilename, _rectInPixels, _rotated, _offsetInPixels, _originalSizeInPixels);
-    copy->setTexture(_texture);
+    copy->initWithTexture(_texture, _rectInPixels, _rotated, _offsetInPixels, _originalSizeInPixels);
     copy->setPolygonInfo(_polygonInfo);
     copy->autorelease();
     return copy;

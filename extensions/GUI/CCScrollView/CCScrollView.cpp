@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2012 cocos2d-x.org
  Copyright (c) 2010 Sangwoo Im
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -24,6 +25,7 @@
  ****************************************************************************/
 
 #include "CCScrollView.h"
+#include <cmath>
 #include "platform/CCDevice.h"
 #include "2d/CCActionInstant.h"
 #include "2d/CCActionInterval.h"
@@ -206,6 +208,14 @@ void ScrollView::setTouchEnabled(bool enabled)
     }
 }
 
+void ScrollView::setSwallowTouches(bool needSwallow)
+{
+    if (_touchListener != nullptr)
+    {
+        _touchListener->setSwallowTouches(needSwallow);
+    }
+}
+
 void ScrollView::setContentOffset(Vec2 offset, bool animated/* = false*/)
 {
     if (animated)
@@ -242,11 +252,13 @@ void ScrollView::setContentOffsetInDuration(Vec2 offset, float dt)
     scroll = MoveTo::create(dt, offset);
     expire = CallFuncN::create(CC_CALLBACK_1(ScrollView::stoppedAnimatedScroll,this));
     _animatedScrollAction = _container->runAction(Sequence::create(scroll, expire, nullptr));
+    _animatedScrollAction->retain();
     this->schedule(CC_SCHEDULE_SELECTOR(ScrollView::performedAnimatedScroll));
 }
 
 void ScrollView::stopAnimatedContentOffset() {
     stopAction(_animatedScrollAction);
+    _animatedScrollAction->release();
     _animatedScrollAction = nullptr;
     stoppedAnimatedScroll(this);
 }
@@ -776,7 +788,7 @@ void ScrollView::onTouchMoved(Touch* touch, Event* /*event*/)
                 }
             }
 
-            if (!_touchMoved && fabs(convertDistanceFromPointToInch(dis)) < MOVE_INCH )
+            if (!_touchMoved && std::fabs(convertDistanceFromPointToInch(dis)) < MOVE_INCH )
             {
                 //CCLOG("Invalid movement, distance = [%f, %f], disInch = %f", moveDistance.x, moveDistance.y);
                 return;
@@ -838,7 +850,7 @@ void ScrollView::onTouchEnded(Touch* touch, Event* /*event*/)
         _touches.erase(touchIter);
     } 
 
-    if (_touches.size() == 0)
+    if (_touches.empty())
     {
         _dragging = false;    
         _touchMoved = false;
@@ -853,9 +865,13 @@ void ScrollView::onTouchCancelled(Touch* touch, Event* /*event*/)
     }
     
     auto touchIter = std::find(_touches.begin(), _touches.end(), touch);
+
+    if ( touchIter == _touches.end() )
+        return;
+    
     _touches.erase(touchIter);
     
-    if (_touches.size() == 0)
+    if (_touches.empty())
     {
         _dragging = false;    
         _touchMoved = false;
